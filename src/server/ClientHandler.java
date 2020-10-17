@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.*;
 
 public class ClientHandler {
     DataInputStream in;
@@ -105,6 +106,19 @@ public class ClientHandler {
             e.printStackTrace();
         }
     }
+
+    private void checkGuestAuth(final String messageIn) {
+        if (messageIn.startsWith("/authGuest ")) {
+            nickname = messageIn.split("\\s")[1];
+            sendMsg("/authоk " + nickname);
+            sendMsg("У вас 2 минуты на авторизацию, иначе соединение закроется.");
+            server.subscribe(this);
+            boolean isAuthorization = true;
+            ScheduledExecutorService scheduledExecutor = null;
+            scheduledExecutor.schedule(() -> sendMsg("/authGuestNo"), 120, TimeUnit.SECONDS);
+        }
+    }
+
 
     public void sendMsg(String msg) {
         try {
